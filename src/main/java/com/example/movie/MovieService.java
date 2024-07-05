@@ -1,14 +1,15 @@
 package com.example.movie;
 
 import com.example.movie.Movie;
-import com.example.movie.MovieRepository;
 
 import java.util.*;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 public class MovieService implements MovieRepository {
 
     private static HashMap<Integer, Movie> movieList = new HashMap<>();
-    private static int movieIdCounter = 6;
 
     public MovieService() {
         movieList.put(1, new Movie(1, "Avengers: Endgame", "Robert Downey Jr."));
@@ -18,38 +19,57 @@ public class MovieService implements MovieRepository {
         movieList.put(5, new Movie(5, "Jurassic World", "Chris Pratt"));
     }
 
+    int uniqueId = 6;
+
     @Override
-    public List<Movie> getAllMovies() {
-        return new ArrayList<>(movieList.values());
+    public ArrayList<Movie> getMovies() {
+        Collection<Movie> movieCollection = movieList.values();
+        ArrayList<Movie> movies = new ArrayList<>(movieCollection);
+        return movies;
     }
 
     @Override
-    public void addMovie(Movie movie) {
-        movie.setMovieId(movieIdCounter);
-        movieList.put(movieIdCounter, movie);
-        movieIdCounter++;
+    public Movie addMovie(Movie movie) {
+        movie.setMovieId(uniqueId);
+        movieList.put(uniqueId, movie);
+        uniqueId++;
+        return movie;
+    }
+
+    @Override
+    public Movie updateMovie(int movieId, Movie movie) {
+        Movie existingMovie = movieList.get(movieId);
+        if (existingMovie == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        if (movie.getMovieName() != null) {
+            existingMovie.setMovieName(movie.getMovieName());
+        }
+        if (movie.getLeadActor() != null) {
+            existingMovie.setLeadActor(movie.getLeadActor());
+        }
+
+        return existingMovie;
     }
 
     @Override
     public Movie getMovieById(int movieId) {
-        return movieList.get(movieId);
-    }
-
-    @Override
-    public void updateMovie(Movie movie) {
-        if (movieList.containsKey(movie.getMovieId())) {
-            movieList.put(movie.getMovieId(), movie);
-        } else {
-            throw new RuntimeException("Movie not found");
+        Movie movie = movieList.get(movieId);
+        if (movie == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
+        return movie;
     }
 
     @Override
     public void deleteMovie(int movieId) {
-        if (movieList.containsKey(movieId)) {
-            movieList.remove(movieId);
+        Movie movie = movieList.get(movieId);
+        if (movie == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         } else {
-            throw new RuntimeException("Movie not found");
+            movieList.remove(movieId);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
         }
     }
+
 }
