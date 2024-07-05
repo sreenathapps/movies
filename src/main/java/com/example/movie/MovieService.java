@@ -1,11 +1,3 @@
-/*
- * You can use the following import statements
- * 
- * import org.springframework.web.server.ResponseStatusException;
- * import org.springframework.http.HttpStatus;
- * 
- */
-
 package com.example.movie;
 
 import com.example.movie.Movie;
@@ -13,11 +5,10 @@ import com.example.movie.MovieRepository;
 
 import java.util.*;
 
-// Do not modify the below code
-
 public class MovieService implements MovieRepository {
 
     private static HashMap<Integer, Movie> movieList = new HashMap<>();
+    private static int movieIdCounter = 6;
 
     public MovieService() {
         movieList.put(1, new Movie(1, "Avengers: Endgame", "Robert Downey Jr."));
@@ -27,8 +18,38 @@ public class MovieService implements MovieRepository {
         movieList.put(5, new Movie(5, "Jurassic World", "Chris Pratt"));
     }
 
-    // Do not modify the above code
+    @Override
+    public List<Movie> getAllMovies() {
+        return new ArrayList<>(movieList.values());
+    }
 
-    // Write your code here
+    @Override
+    public void addMovie(Movie movie) {
+        movie.setMovieId(movieIdCounter);
+        movieList.put(movieIdCounter, movie);
+        movieIdCounter++;
+    }
 
+    @Override
+    public Movie getMovieById(int movieId) {
+        return movieList.get(movieId);
+    }
+
+    @Override
+    public void updateMovie(Movie movie) {
+        if (movieList.containsKey(movie.getMovieId())) {
+            movieList.put(movie.getMovieId(), movie);
+        } else {
+            throw new RuntimeException("Movie not found");
+        }
+    }
+
+    @Override
+    public void deleteMovie(int movieId) {
+        if (movieList.containsKey(movieId)) {
+            movieList.remove(movieId);
+        } else {
+            throw new RuntimeException("Movie not found");
+        }
+    }
 }
